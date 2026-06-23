@@ -1,116 +1,112 @@
-# Day 1 Theory Notes
-## Based on Gilbert Strang — MIT 18.06 Lecture 1 & Lecture 6
+# Day 1 Theory Notes — UPDATED
+## Gilbert Strang — MIT 18.06 Lecture 1 & Lecture 6
+### + ML Outcomes + Numericals + mitmath/1806 additions
 
-> **Write these by hand after reading.** The goal is intuition, not memorization.
+> **Write these by hand after reading.** Goal is intuition, not memorization.
+
+---
+
+## ⚡ BEFORE YOU WATCH — What to Look For
+
+### Lecture 1 — "The Geometry of Linear Equations"
+**Your one question going in:** *How does Strang see Ax as a column combination, not a row dot-product?*
+
+| Watch for | Why it matters for ML |
+|---|---|
+| Row picture vs Column picture | In ML, weight matrices W act on input vectors — you're always in column-picture land |
+| "Do columns fill the space?" | This is literally what full-rank weight layers mean — no dead dimensions |
+| Ax as linear combo of columns | Forward pass of a neural net IS this, layer by layer |
+| 3D planes failing intuition | Why visualizing high-dim ML spaces always breaks — Strang's warning scales to 10,000D |
+
+**Concrete ML link:** In a linear layer `y = Wx`, the output `y` is a linear combination of columns of `W`, weighted by `x`. Strang's column picture = every forward pass.
+
+---
+
+### Lecture 6 — "Column Space and Nullspace"
+**Your one question going in:** *What does it mean for a matrix to "crush" part of the input space to zero?*
+
+| Watch for | Why it matters for ML |
+|---|---|
+| Column space C(A) | The set of all outputs your model can produce — its "representational capacity" |
+| Null space N(A) | Directions in input space the model is blind to — dead features, degenerate weights |
+| Subspace closure rules | Why linear layers can't escape their subspace — no matter how deep, if no nonlinearity |
+| Rank | Number of "independent directions" a layer uses — low-rank = bottleneck |
+
+**Concrete ML link:** A weight matrix W with rank r < n means your model collapses the input into an r-dimensional subspace. This is exactly what LoRA exploits — you already fine-tune VisionTeX with this! Low-rank ΔW is an intentional null-space manipulation.
 
 ---
 
 ## ━━ LECTURE 1 ━━  The Geometry of Linear Equations
 
-### What is the fundamental problem of Linear Algebra?
-
-Strang opens Lecture 1 with a direct statement:
+### The Fundamental Problem
 
 > *"The fundamental problem of linear algebra is to solve a system of linear equations."*
+> — Strang, Lecture 1 opening
 
-Everything — every matrix, every subspace, every algorithm — connects back to this one goal.
+Everything — every matrix, every subspace, every algorithm — connects back to this.
 
 ---
 
-### The Example System (2 equations, 2 unknowns)
+### The Example System
 
 ```
 2x  −  y  =  0
 −x  + 2y  =  3
 ```
 
-Strang shows **three completely different ways** to look at this same system. Each way gives you a different picture — and a different insight.
+Three ways to see the same system.
 
 ---
 
-### WAY 1 — The Row Picture (one equation at a time)
+### WAY 1 — Row Picture
 
-Each equation is a **line** in the xy-plane.
+Each equation = a **line** in the xy-plane.
 
 ```
-2x − y = 0   →  a line through the origin (slope 2)
+2x − y = 0   →  line through origin (slope 2)
 −x + 2y = 3  →  another line (slope 0.5, shifted)
 ```
 
-**Plot them. They intersect at exactly one point: (x=1, y=2).**
-
-```
-    y
-  3 |        ●  ← solution (1, 2)
-  2 |      /  \
-  1 |    /      \
-  0 +---/--------\--→ x
-       line 1   line 2
-```
-
-**Strang's key insight:** The row picture shows lines (in 2D) or planes (in 3D) meeting at a point. Works well in 2D, becomes *very hard* to see in 3D because three planes meeting at a point is almost impossible to visualize.
+They intersect at **(x=1, y=2)**. In 3D this becomes planes — almost impossible to visualize. Row picture breaks at high dimension.
 
 ---
 
-### WAY 2 — The Column Picture ⭐ (Strang puts a star on this)
-
-Instead of rows, look at the **columns** of the coefficient matrix:
+### WAY 2 — Column Picture ⭐
 
 ```
-x · [2]  +  y · [-1]  =  [0]
-    [-1]         [2]      [3]
+x · [ 2]  +  y · [-1]  =  [0]
+    [-1]         [ 2]      [3]
 ```
 
-This says: **"What combination of the column vectors gives us the right-hand side?"**
+"What combination of column vectors hits b?"
 
-Column 1 = [2, -1] (call it the green vector)
-Column 2 = [-1, 2] (call it the blue vector)
-Target b = [0, 3]   (the gray vector we want to reach)
+**1 × [2,−1] + 2 × [−1,2] = [0, 3] ✓**
 
-**Answer: 1 × [2,-1] + 2 × [-1,2] = [0, 3] ✓**
-
-So x=1, y=2. Same answer, completely different picture.
-
-```
-     ↑
-  3  |   . b=[0,3]
-  2  |  /
-  1  | /  col2=[-1,2] added twice
-  0  +-------→
-     |
-    col1=[2,-1] added once
-```
-
-**Strang's key insight:** The column picture reframes the problem as: *"Can I find the right linear combination of columns to hit b?"* This is the heart of linear algebra.
+Reframe: *"Is b in the span of the columns?"* — this is the right question for all of LA.
 
 ---
 
-### WAY 3 — The Matrix Form
-
-Write it compactly as **Ax = b**:
+### WAY 3 — Matrix Form
 
 ```
-A  =  [ 2  -1 ]    x = [ x ]    b = [ 0 ]
-      [-1   2 ]        [ y ]        [ 3 ]
+Ax = b   where   A = [ 2 -1]   x = [x]   b = [0]
+                     [-1  2]       [y]       [3]
 ```
 
-This is just a shorthand for the same system. The power of matrix notation is that it works identically whether you have 2 unknowns or 200.
+Compact notation that scales identically to 200 unknowns.
 
 ---
 
-### Extending to 3D (3 equations, 3 unknowns)
+### Ax — The Column Way (Strang's Key Insight)
 
+**Row way:** dot product of each row with x (what you learned in school)
+
+**Column way (better):**
 ```
- 2x −  y       =  0
-−x  + 2y −  z  = −1
-      −3y + 4z  =  4
+Ax = x₁·(col1 of A) + x₂·(col2 of A) + ...
 ```
 
-**Row picture:** Three planes in 3D space. They should all meet at one point. But Strang notes this becomes *very difficult* to visualize — "almost impossible to spot the intersection."
-
-**Column picture:** Still the same idea — find coefficients x, y, z to combine three 3D column vectors and hit b. In this example, b = the third column exactly, so z=1, x=0, y=0 is the solution.
-
-**Strang's warning:** As dimensions grow, the row picture becomes useless for intuition. The column picture scales better — it always asks the same question: *"Is b in the span of the columns?"*
+Ax is a **linear combination of columns**, with x as coefficients. This unlocks everything.
 
 ---
 
@@ -118,233 +114,285 @@ This is just a shorthand for the same system. The power of matrix notation is th
 
 > **"Do the linear combinations of the columns fill the entire space?"**
 
-- If YES → Ax = b has a solution for **every** b
-- If NO → some b's are unreachable; the system has no solution
-
-This question about "filling the space" is exactly what column space captures — which is what Lecture 6 answers.
+- YES → Ax = b has a solution for **every** b
+- NO → some b's are unreachable → no solution
 
 ---
 
-### How to Multiply Ax — Strang's Column Way
+### 3D Extension
 
-Strang shows two ways to think about Ax:
-
-**Row way (usual):** Take dot products of each row with x.
-
-**Column way (better for intuition):**
 ```
-Ax  =  x₁ · (col 1 of A)  +  x₂ · (col 2 of A)  + ...
+ 2x −  y       = 0
+−x  + 2y −  z  = −1
+     −3y + 4z  =  4
 ```
 
-Ax is a **linear combination of columns of A**, with x providing the coefficients. This single insight unlocks everything that follows.
+Row picture: 3 planes — very hard to see where they meet.
+Column picture: b = 3rd column exactly → z=1, x=0, y=0.
+
+**Strang's warning:** Row picture breaks as dimensions grow. Column picture always asks the same clean question.
 
 ---
 
 ## ━━ LECTURE 6 ━━  Column Space and Null Space
 
 > *"We're at the start of Chapter 3 — really getting to the center of linear algebra."*
-> — Strang, opening of Lecture 6
 
 ---
 
-### First: What is a Vector Space?
+### Vector Space (Quick Reminder)
 
-Before column space and null space, Strang reminds us what a **vector space** is:
+Two closure rules:
+1. **Add** any two vectors → stay inside
+2. **Scale** any vector by any scalar → stay inside
 
-A collection of vectors where:
-1. You can **add** any two vectors and stay inside the space
-2. You can **multiply** any vector by any scalar and stay inside the space
-
-Both operations must keep you inside. These are the two closure rules.
-
-**Standard examples:**
-- ℝ² — all 2D vectors (the whole xy-plane)
-- ℝ³ — all 3D vectors
-- Just the zero vector {0} — the smallest possible vector space
+Standard: ℝ², ℝ³, {0}.
 
 ---
 
-### What is a Subspace?
+### Subspace
 
-A **subspace** is a vector space that lives *inside* a bigger vector space.
+A vector space living inside a bigger one. Three requirements:
 
-**Three requirements for S to be a subspace of ℝⁿ:**
-1. The **zero vector** is in S
-2. S is **closed under addition**: u + v ∈ S whenever u, v ∈ S
-3. S is **closed under scalar multiplication**: cu ∈ S whenever u ∈ S
+1. **0 ∈ S** (zero vector test — if it fails, stop here, NOT a subspace)
+2. **u + v ∈ S** whenever u, v ∈ S (closed under addition)
+3. **cu ∈ S** whenever u ∈ S (closed under scaling)
 
-**Quick test — the zero vector rule:** If your set doesn't contain **0**, it's NOT a subspace. Period.
-
-**Example:** A line through the origin in ℝ² IS a subspace. A line that doesn't pass through the origin is NOT (it fails the zero vector test).
+**Quick check:** A line through the origin in ℝ² = subspace ✓. A line NOT through origin = NOT a subspace ✗.
 
 ---
 
-### Strang's Subspace Examples (from Lecture 6)
-
-Subspaces of ℝ³ — there are only these types:
+### All Subspaces of ℝ³ (Strang's Complete List)
 
 ```
-Type 1: Just {0}          — a single point (the origin)
-Type 2: A LINE through 0  — one direction, all scalings
-Type 3: A PLANE through 0 — two directions, all combinations
-Type 4: All of ℝ³         — the whole space
+{0}          — just the origin
+Line thru 0  — one direction, all scalings
+Plane thru 0 — two directions, all combinations
+All of ℝ³   — the whole space
 ```
 
-**Key point from Strang:** A plane in ℝ³ that doesn't go through the origin is NOT a subspace. It might look flat and nice, but it fails closure — add two vectors in it and you can land outside it.
+A plane NOT through the origin is **not** a subspace.
 
 ---
 
-### Union vs Intersection of Subspaces
+### Union vs Intersection
 
-Strang discusses this in Lecture 6 carefully.
+**Union (P ∪ L):** NOT a subspace (in general). Pick one vector from P, one from L — their sum can land outside both.
 
-**Union (P ∪ L):** Take all vectors in P (a plane) OR in L (a line). Is this a subspace?
-
-**NO.** You can pick one vector from P and one from L, add them, and land somewhere outside both. Union almost never gives a subspace.
-
-**Intersection (P ∩ L):** Take all vectors that are in BOTH P and L. Is this a subspace?
-
-**YES — always.** The intersection of any two subspaces is still a subspace.
-
-**Strang's example:** If P is a plane through origin and L is a line through origin (not in the plane), their intersection is just {0} — the zero vector. Still a valid (tiny) subspace.
+**Intersection (P ∩ L):** ALWAYS a subspace. If Strang's plane and a line (not in plane) intersect, result = {0} — still valid.
 
 ---
 
 ### Column Space C(A)
 
-**Definition:** The column space of A is the set of all linear combinations of the columns of A.
-
 ```
-C(A)  =  { Ax : x ∈ ℝⁿ }
-       =  span of all columns of A
+C(A) = { Ax : x ∈ ℝⁿ } = span of columns of A
 ```
 
-**Why does this matter?** Strang states it clearly:
+> *"The column space of A tells us when Ax = b has a solution."*
 
-> *"The column space of A tells us when the equation Ax = b will have a solution x."*
-
-**Ax = b has a solution ⟺ b is in C(A)**
-
-Because Ax is always a linear combination of columns, b must be reachable from those columns.
+**Ax = b has a solution ⟺ b ∈ C(A)**
 
 ---
 
 ### Column Space Example
 
 ```
-A  =  [ 1  1  2 ]
-      [ 2  1  3 ]
-      [ 3  1  4 ]
-      [ 4  1  5 ]
+A = [1  1  2]
+    [2  1  3]
+    [3  1  4]
+    [4  1  5]
 ```
 
-The third column = column 1 + column 2. So it's dependent. C(A) is a **plane** in ℝ⁴, not all of ℝ⁴.
+Column 3 = Col 1 + Col 2 → dependent. C(A) = a **plane** in ℝ⁴, not all of ℝ⁴. Only b's in that plane have a solution.
 
-**Only b's that lie in this plane have a solution Ax = b.**
-
-Strang's classroom moment: He asks students to find b's that work. The trick: think of a solution x first, then compute b = Ax. That guarantees b is in C(A).
+**Strang's trick:** Want a b that works? Pick any x, compute b = Ax. Guaranteed to be in C(A).
 
 ---
 
 ### Null Space N(A)
 
-**Definition:** The null space of A is the set of all solutions to Ax = 0.
-
 ```
-N(A)  =  { x ∈ ℝⁿ : Ax = 0 }
+N(A) = { x ∈ ℝⁿ : Ax = 0 }
 ```
 
-**Strang says:**
+> *"The null space tells us which x solve Ax = 0."*
 
-> *"The null space tells us which values of x solve the equation Ax = 0."*
+**Proof it's a subspace:**
+- If Ax = 0 and Ay = 0 → A(x+y) = 0 ✓
+- If Ax = 0 → A(cx) = c(Ax) = 0 ✓
 
-**Is the null space really a subspace?** Strang verifies the two rules:
-
-1. **Closure under addition:** If Ax = 0 and Ay = 0, then A(x+y) = Ax + Ay = 0 + 0 = 0 ✓
-2. **Closure under scalar multiplication:** If Ax = 0, then A(cx) = c(Ax) = c·0 = 0 ✓
-
-**Yes — the null space is always a subspace.** This is guaranteed by the linearity of A.
+Always a subspace. Guaranteed by linearity of A.
 
 ---
 
 ### Null Space Example
 
 ```
-A  =  [ 1  2 ]
-      [ 2  4 ]
+A = [1  2]
+    [2  4]   ← row 2 = 2 × row 1
 ```
 
-Solve Ax = 0:
-```
-x₁ + 2x₂ = 0
-2x₁ + 4x₂ = 0   ← same equation! (row 2 = 2 × row 1)
-```
-
-Solution: x₁ = −2x₂, so x₂ is free.
+Solve Ax = 0: only one real equation → x₁ = −2x₂
 
 ```
-x = x₂ · [-2]    for any x₂ ∈ ℝ
+x = x₂ · [-2]    for any x₂
            [ 1]
 ```
 
-**N(A) = a line in ℝ² through the origin, pointing in direction [-2, 1].**
-
-The matrix A is rank 1. It crushes an entire line down to zero.
+**N(A) = a line in ℝ² through origin, direction [-2, 1].** A is rank 1, crushes this entire line to zero.
 
 ---
 
-### The Key Contrast: Column Space vs Null Space
+### The Key Contrast
 
 | | Column Space C(A) | Null Space N(A) |
 |---|---|---|
 | **Lives in** | ℝᵐ (output space) | ℝⁿ (input space) |
-| **Answers** | When does Ax = b have a solution? | What inputs x does A map to zero? |
-| **Contains** | All possible outputs Ax | All x that A "ignores" |
-| **Always has** | At least the zero vector | Always at least {0} |
+| **Answers** | When does Ax = b have a solution? | What inputs does A map to zero? |
+| **Always has** | At least **0** | Always at least **{0}** |
 
 ---
 
-### Strang's Subspace Check — 3 Questions to Always Ask
+### Strang's Subspace Check (always ask these 3)
 
-Whenever someone hands you a set S and asks "is it a subspace?", check:
 1. Is **0** in S?
-2. If u and v are in S, is **u + v** in S?
-3. If u is in S and c is any scalar, is **cu** in S?
+2. If u, v ∈ S → is u+v ∈ S?
+3. If u ∈ S and c ∈ ℝ → is cu ∈ S?
 
-If all three: YES, subspace. Fail any one: NOT a subspace.
+All three YES = subspace. Fail one = not a subspace.
 
 ---
 
-## Quick Reference — Both Lectures Together
+## ━━ NUMERICALS — Solve These ━━
+
+> From Strang's 18.06 problem sets + mitmath/1806 exercises. Do on paper first.
+
+---
+
+### Block 1 — Lec 1 (Row/Column Picture, Ax = b)
+
+**N1.** Solve by column picture — find x, y as scalings of column vectors:
+```
+3x + y  = 7
+x  + 2y = 4
+```
+Sketch: draw col1=[3,1], col2=[1,2], target b=[7,4]. What combo works?
+
+**N2.** For A = [[2,1],[6,3]], and b = [4, 12]:
+- Write Ax = b.
+- Does a solution exist? Infinitely many?
+- Find the null space of A (what x satisfies Ax = 0?).
+
+**N3.** Compute Ax using the **column picture** (linear combination of columns):
+```
+A = [1  2  3]    x = [2]
+    [4  5  6]        [0]
+                     [1]
+```
+Don't use row dot-products. Compute: 2·col1 + 0·col2 + 1·col3.
+
+---
+
+### Block 2 — Lec 6 (Subspace, C(A), N(A))
+
+**N4.** Which of these are subspaces of ℝ²?
+- a) All vectors [x, y] with x + y = 0
+- b) All vectors [x, y] with x + y = 1
+- c) All vectors [x, y] with x ≥ 0
+- d) All vectors [x, 2x] (the line y = 2x)
+
+**N5.** For A = [[1,1,2],[2,1,3],[3,1,4],[4,1,5]]:
+- Find a b = [b1,b2,b3,b4] that IS in C(A) (use Strang's trick: pick x, compute b)
+- Find a b that is NOT in C(A)
+
+**N6.** Solve Ax = 0 and describe N(A) geometrically:
+```
+A = [1  2  3]
+    [2  4  6]
+```
+(Hint: row 2 = 2 × row 1. Two free variables.)
+
+**N7.** (Harder) Prove or disprove: if S₁ and S₂ are subspaces of ℝⁿ, then S₁ ∪ S₂ is a subspace. Give a concrete counterexample in ℝ².
+
+---
+
+### Block 3 — ML-Flavored Applications
+
+**N8.** A weight matrix in a neural net layer:
+```
+W = [1  0  1]
+    [0  1  1]
+```
+(2 output dims, 3 input dims)
+- What is C(W)? What dimension is it? (= how many independent output directions)
+- What is N(W)? (= which input directions the layer ignores)
+
+**N9.** LoRA insight: Suppose W = AB where A is 4×2 and B is 2×3.
+- What is the maximum rank of W?
+- What does this say about C(W) — can it span all of ℝ⁴?
+
+---
+
+## SOLUTIONS (check after attempting)
+
+**N1.** Set up x[3,1] + y[1,2] = [7,4] → 3x+y=7, x+2y=4 → x=2, y=1.
+
+**N2.** Row 2 = 3×row 1. The system has infinitely many solutions. N(A): 2x+y=0 → y=-2x → N(A) = span{[1,-2]}.
+
+**N3.** 2·[1,4] + 0·[2,5] + 1·[3,6] = [2,8] + [0,0] + [3,6] = **[5, 14]**.
+
+**N4.** a) ✓ (line through origin), b) ✗ (doesn't contain 0), c) ✗ (not closed under scaling by -1), d) ✓ (line through origin).
+
+**N5.** Pick x=[1,0,0] → b=[1,2,3,4] ∈ C(A). Pick b=[1,1,1,1] → does NOT satisfy the plane constraints (you can verify after row reduction).
+
+**N6.** Only one equation: x₁+2x₂+3x₃=0. Two free variables (x₂, x₃). N(A) = span{[-2,1,0], [-3,0,1]} — a **plane** in ℝ³.
+
+**N7.** Not a subspace. Counterexample: S₁ = x-axis, S₂ = y-axis in ℝ². Take [1,0] ∈ S₁ and [0,1] ∈ S₂. Sum [1,1] ∉ S₁ ∪ S₂.
+
+**N8.** C(W) = span{[1,0],[0,1],[1,1]} — but col3=col1+col2, so C(W) = all of ℝ² (rank 2). N(W): x₁+x₃=0, x₂+x₃=0 → N(W) = span{[1,1,-1]}.
+
+**N9.** Rank(W) ≤ min(rank(A), rank(B)) ≤ 2. W cannot span ℝ⁴ — C(W) is at most 2D inside ℝ⁴. This is why LoRA is a low-rank approximation — the update lives in a tiny subspace.
+
+---
+
+## Quick Reference — Both Lectures
 
 ```
-LECTURE 1 CORE IDEAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LECTURE 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Row picture    → equations as lines/planes
 Column picture → Ax as linear combo of columns ⭐
-Matrix form   → Ax = b (compact notation)
+Matrix form    → Ax = b (compact notation)
+Key question   → Do column combos fill all of ℝⁿ?
 
-Key question: Do column combinations fill all of ℝⁿ?
+LECTURE 6
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Vector space   → closed under + and scalar ×
+Subspace       → must contain 0; closed under both ops
+Column space   → C(A) = span of columns = all Ax
+                 Ax = b solvable ⟺ b ∈ C(A)
+Null space     → N(A) = all x with Ax = 0
+                 always a subspace (by linearity)
+Rank           → dim(C(A)) = number of pivot columns
 
-LECTURE 6 CORE IDEAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Vector space  → closed under + and scalar ×
-Subspace      → vector space inside a bigger one;
-                must contain 0
-Column space  → C(A) = span of columns = all Ax
-               Ax = b solvable ⟺ b ∈ C(A)
-Null space    → N(A) = all x with Ax = 0
-               always a subspace (by linearity)
+ML CONNECTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Forward pass   → Ax in column picture
+C(W)           → representational capacity of a layer
+N(W)           → blind directions (dead features)
+Low rank W     → bottleneck / LoRA territory
+Full rank W    → layer can represent any output in ℝᵐ
 ```
 
 ---
 
-## Hand-Note Task (Do This Right Now)
+## Hand-Note Task (Do This Right Now — No Peeking)
 
-> Without looking at this file, write answers to:
-> 1. What are the three pictures of a linear system? Sketch each for 2×2.
-> 2. What does Ax mean as a column combination?
-> 3. Define column space and null space in one sentence each.
-> 4. Why is C(A) relevant to solving Ax = b?
-> 5. Prove that N(A) is closed under addition (2 lines).
-> 6. Is the union of two subspaces always a subspace? Give a counterexample.
+1. Sketch row picture and column picture for: 2x+y=5, x+3y=7
+2. Write Ax for x=[1,2] using column picture for A=[[3,1],[2,4]]
+3. One sentence each: define C(A) and N(A)
+4. Why does Ax=b solvable ⟺ b ∈ C(A)?
+5. Prove N(A) closed under addition (2 lines)
+6. Counterexample: union of two subspaces is NOT a subspace
+7. **New (ML):** A layer W: ℝ⁵ → ℝ³ has rank 2. What's the dimension of C(W)? Of N(W)?
