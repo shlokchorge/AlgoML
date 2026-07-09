@@ -1,5 +1,9 @@
 # Day 02 — Matrix Multiplication, Linear Transformations, Determinants
+<<<<<<< HEAD
 > **Source:** 3B1B Essence of LA Ch.4–7 + Ch.13 
+=======
+> **Source:** 3B1B Essence of LA Ch.4–7 + Ch.13 · 
+>>>>>>> origin/main
 > **Phase 1 · Days 1–8 · Linear Algebra — Vectors to SVD**  
 > **Target:** matrix multiplication as composing transformations · det = 0 means squish to lower dimension · what A⁻¹MA means geometrically
 
@@ -375,4 +379,8 @@ Qᵀ = Q⁻¹  →  [x]_Q = Qᵀx  (orthonormal)
 
 ---
 
+<<<<<<< HEAD
 > *A matrix is a transformation. Multiplying matrices is composing transformations. The determinant measures how much the transformation stretches space — and zero means it destroys a dimension entirely.*
+=======
+> *A matrix is a transformation. Multiplying matrices is composing transformations. The determinant measures how much the transformation stretches space — and zero means it destroys a dimension entirely.*
+>>>>>>> origin/main
